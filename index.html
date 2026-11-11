@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>림버스 스탯 카드</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;background:#e9eaee;color:#222;padding:16px}
+  .wrap{max-width:460px;margin:0 auto}
+  .card{border-radius:18px;padding:18px;box-shadow:0 6px 20px rgba(0,0,0,.15);transition:background .25s,color .25s}
+  .top{display:flex;gap:12px;align-items:flex-start}
+  .info{flex:1;min-width:0}
+  .card textarea{width:100%;border:none;background:transparent;color:inherit;outline:none;resize:none;overflow:hidden;font-family:inherit;display:block;word-break:break-all;line-height:1.35}
+  .card textarea.name{font-size:22px;font-weight:800;padding:4px 0;border-bottom:2px dashed currentColor}
+  .card textarea.quote{margin-top:10px;font-size:14px;padding:4px 0;border-bottom:1px dashed currentColor;font-style:italic;opacity:.85}
+  .card textarea::placeholder{color:inherit;opacity:.5}
+  .img{width:100px;height:100px;flex-shrink:0;border-radius:12px;border:2px solid currentColor;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:12px;opacity:.95;text-align:center}
+  .img img{width:100%;height:100%;object-fit:cover;display:block}
+  svg{display:block;width:100%;height:auto;margin-top:8px}
+  .panel{background:#fff;border-radius:14px;padding:14px;margin-top:14px}
+  .panel h3{margin:0 0 10px;font-size:15px}
+  select{width:100%;padding:9px;border:1px solid #ccc;border-radius:8px;font-size:15px;background:#fff;margin-bottom:8px}
+  .colors{display:flex;flex-wrap:wrap;gap:8px}
+  .sw{width:34px;height:34px;border-radius:50%;border:2px solid #ccc;cursor:pointer}
+  .sw.on{outline:3px solid #333;outline-offset:2px}
+  .row{display:grid;grid-template-columns:1fr 1.4fr 60px;gap:8px;align-items:center;margin-bottom:10px}
+  .row input[type=text]{padding:7px 8px;border:1px solid #ccc;border-radius:8px;font-size:14px;width:100%}
+  .row input[type=range]{width:100%}
+  .val{display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:15px}
+  .val button{border:none;background:#eee;border-radius:6px;width:22px;height:26px;font-size:15px;padding:0}
+  .btns{display:flex;gap:8px;margin-top:6px}
+  .btns button{flex:1;padding:11px;border:none;border-radius:8px;background:#333;color:#fff;font-size:15px}
+  .btns button.sub{background:#ddd;color:#222}
+  footer{text-align:center;font-size:11px;color:#888;margin:18px 0 6px;line-height:1.6}
+  #preview{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;z-index:9}
+  #preview img{max-width:100%;max-height:80vh;border-radius:12px}
+  #preview p{color:#fff;font-size:14px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card" id="card">
+    <div class="top">
+      <div class="info">
+        <textarea class="name" id="name" rows="1" placeholder="이름 입력" maxlength="60"></textarea>
+        <textarea class="quote" id="quote" rows="1" placeholder="한줄평 입력" maxlength="100"></textarea>
+      </div>
+      <div class="img" id="imgbox">인격<br>선택</div>
+    </div>
+    <svg id="radar" viewBox="0 0 360 330"></svg>
+  </div>
+
+  <div class="panel">
+    <h3>수감자 · 인격</h3>
+    <select id="sinner"></select>
+    <select id="identity"></select>
+  </div>
+
+  <div class="panel">
+    <h3>바탕색</h3>
+    <div class="colors" id="colors"></div>
+  </div>
+
+  <div class="panel">
+    <h3>스탯 (0~10, 0.5 단위)</h3>
+    <div id="stats"></div>
+    <div class="btns">
+      <button class="sub" id="reset">초기화</button>
+      <button id="save">이미지로 저장</button>
+    </div>
+  </div>
+
+  <footer>비공식 2차 창작 팬 사이트입니다.<br>인격 이미지의 저작권은 ProjectMoon에 있습니다.</footer>
+</div>
+<div id="preview"><img id="pimg" alt="카드 이미지"><p>저장이 안 되면 이미지를 길게 눌러 저장하세요.<br>(화면을 누르면 닫혀요)</p></div>
+
+<script src="data.js"></script>
+<script>
+const COLORS=[
+  {bg:'#e53935',fg:'#fff'},{bg:'#fb8c00',fg:'#fff'},{bg:'#fdd835',fg:'#222'},
+  {bg:'#43a047',fg:'#fff'},{bg:'#1e88e5',fg:'#fff'},{bg:'#283593',fg:'#fff'},
+  {bg:'#8e24aa',fg:'#fff'},{bg:'#ffffff',fg:'#222'},{bg:'#111111',fg:'#fff'}];
+const DEF=()=>({name:'',quote:'',color:8,sinner:'',identity:'',autoName:true,stats:[
+  {l:'힘',v:5},{l:'민첩',v:5},{l:'지능',v:5},{l:'체력',v:5},{l:'매력',v:5},{l:'행운',v:5}]});
+let S;
+try{S=Object.assign(DEF(),JSON.parse(localStorage.getItem('limbus_stat'))||{})}catch(e){S=DEF()}
+const save=()=>{try{localStorage.setItem('limbus_stat',JSON.stringify(S))}catch(e){}};
+const $=id=>document.getElementById(id);
+
+function fit(t){t.style.height='auto';t.style.height=t.scrollHeight+'px'}
+function fitAll(){fit($('name'));fit($('quote'))}
+['name','quote'].forEach(k=>{const t=$(k);t.value=S[k];
+  t.oninput=()=>{t.value=t.value.replace(/\n/g,'');S[k]=t.value;if(k==='name')S.autoName=false;fit(t);save()};
+  t.onkeydown=e=>{if(e.key==='Enter')e.preventDefault()};});
+window.addEventListener('resize',fitAll);
+
+// sinner / identity
+const sSel=$('sinner'),iSel=$('identity');
+sSel.innerHTML='<option value="">수감자 선택</option>'+LIMBUS.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+function fillIds(){
+  const s=LIMBUS.find(x=>x.id===sSel.value);
+  iSel.innerHTML='<option value="">인격 선택</option>'+(s?s.ids.map(i=>`<option value="${i.id}">${i.name}</option>`).join(''):'');
+  iSel.disabled=!s;
+}
+function showImg(){
+  const box=$('imgbox');
+  if(S.identity){box.innerHTML=`<img id="pic" src="img/${S.identity}.webp" alt="">`}
+  else box.innerHTML='인격<br>선택';
+}
+sSel.onchange=()=>{S.sinner=sSel.value;S.identity='';fillIds();showImg();save()};
+iSel.onchange=()=>{
+  S.identity=iSel.value;showImg();
+  if(S.autoName||!S.name){
+    const s=LIMBUS.find(x=>x.id===S.sinner),i=s&&s.ids.find(x=>x.id===S.identity);
+    S.name=i?`${i.name} ${s.name}`:'';$('name').value=S.name;S.autoName=true;fit($('name'));
+  }
+  save();
+};
+
+function renderColors(){
+  $('colors').innerHTML='';
+  COLORS.forEach((c,i)=>{const d=document.createElement('div');
+    d.className='sw'+(i===S.color?' on':'');d.style.background=c.bg;
+    d.onclick=()=>{S.color=i;apply();renderColors();save()};$('colors').appendChild(d)});
+}
+function renderStats(){
+  const box=$('stats');box.innerHTML='';
+  S.stats.forEach(s=>{
+    const r=document.createElement('div');r.className='row';
+    r.innerHTML=`<input type="text" maxlength="8"><input type="range" min="0" max="10" step="0.5"><div class="val"><button>-</button><span></span><button>+</button></div>`;
+    const [t,rg]=r.querySelectorAll('input'),[m,p]=r.querySelectorAll('button'),sp=r.querySelector('span');
+    t.value=s.l;rg.value=s.v;sp.textContent=s.v;
+    const set=v=>{v=Math.max(0,Math.min(10,Math.round(v*2)/2));s.v=v;rg.value=v;sp.textContent=v;draw();save()};
+    t.oninput=()=>{s.l=t.value;draw();save()};rg.oninput=()=>set(+rg.value);
+    m.onclick=()=>set(s.v-.5);p.onclick=()=>set(s.v+.5);box.appendChild(r)});
+}
+const esc=t=>t.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const CX=180,CY=168,R=112;
+const pt=(i,r)=>{const a=-Math.PI/2+i*Math.PI/3;return[CX+r*Math.cos(a),CY+r*Math.sin(a)]};
+function labelPos(i){const[x,y]=pt(i,R+26);const a=Math.abs(x-CX)<5?'middle':(x>CX?'start':'end');return{x:x+(a==='start'?-8:a==='end'?8:0),y,a}}
+function draw(){
+  const fg=COLORS[S.color].fg;let h='';
+  for(let k=1;k<=5;k++)h+=`<polygon points="${[0,1,2,3,4,5].map(i=>pt(i,R*k/5).join(',')).join(' ')}" fill="none" stroke="${fg}" stroke-opacity="${k===5?.6:.25}" stroke-width="${k===5?2:1}"/>`;
+  for(let i=0;i<6;i++){const[x,y]=pt(i,R);h+=`<line x1="${CX}" y1="${CY}" x2="${x}" y2="${y}" stroke="${fg}" stroke-opacity=".25"/>`}
+  h+=`<polygon points="${S.stats.map((s,i)=>pt(i,R*s.v/10).join(',')).join(' ')}" fill="${fg}" fill-opacity=".35" stroke="${fg}" stroke-width="2.5" stroke-linejoin="round"/>`;
+  S.stats.forEach((s,i)=>{const[x,y]=pt(i,R*s.v/10);h+=`<circle cx="${x}" cy="${y}" r="3.5" fill="${fg}"/>`});
+  S.stats.forEach((s,i)=>{const p=labelPos(i);
+    h+=`<text x="${p.x}" y="${p.y}" fill="${fg}" font-size="15" font-weight="700" text-anchor="${p.a}" dominant-baseline="middle">${esc(s.l||'')}</text>`;
+    h+=`<text x="${p.x}" y="${p.y+17}" fill="${fg}" font-size="12" opacity=".75" text-anchor="${p.a}" dominant-baseline="middle">${s.v}</text>`});
+  $('radar').innerHTML=h;
+}
+function apply(){const c=COLORS[S.color];const card=$('card');card.style.background=c.bg;card.style.color=c.fg;card.style.border=S.color===7?'1px solid #ddd':'none';draw()}
+
+// export as image (drawn on canvas)
+function wrap(ctx,text,maxW){const lines=[];let cur='';for(const ch of text){if(ctx.measureText(cur+ch).width>maxW&&cur){lines.push(cur);cur=ch}else cur+=ch}if(cur)lines.push(cur);return lines}
+async function exportCard(){
+  const c=COLORS[S.color],W=460,P=18,sc=2,cv=document.createElement('canvas'),ctx=cv.getContext('2d');
+  const font='-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+  const textW=W-P*2-100-12;
+  ctx.font=`800 22px ${font}`;const nl=wrap(ctx,S.name||'',textW);
+  ctx.font=`italic 14px ${font}`;const ql=wrap(ctx,S.quote||'',textW);
+  const textH=nl.length*30+(ql.length?10+ql.length*19:0);
+  const topH=Math.max(100,textH),chartW=W-P*2,chartH=chartW*330/360,H=P+topH+8+chartH+P;
+  cv.width=W*sc;cv.height=H*sc;ctx.scale(sc,sc);
+  ctx.fillStyle=c.bg;ctx.beginPath();ctx.roundRect(0,0,W,H,18);ctx.fill();
+  ctx.fillStyle=c.fg;ctx.textBaseline='top';
+  ctx.font=`800 22px ${font}`;nl.forEach((l,i)=>ctx.fillText(l,P,P+4+i*30));
+  ctx.globalAlpha=.85;ctx.font=`italic 14px ${font}`;ql.forEach((l,i)=>ctx.fillText(l,P,P+nl.length*30+10+i*19));ctx.globalAlpha=1;
+  const ix=W-P-100,iy=P;
+  ctx.save();ctx.beginPath();ctx.roundRect(ix,iy,100,100,12);ctx.clip();
+  const pic=$('pic');if(pic&&pic.complete&&pic.naturalWidth)ctx.drawImage(pic,ix,iy,100,100);ctx.restore();
+  ctx.strokeStyle=c.fg;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(ix,iy,100,100,12);ctx.stroke();
+  ctx.save();ctx.translate(P,P+topH+8);ctx.scale(chartW/360,chartW/360);
+  const poly=(pts)=>{ctx.beginPath();pts.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath()};
+  for(let k=1;k<=5;k++){poly([0,1,2,3,4,5].map(i=>pt(i,R*k/5)));ctx.globalAlpha=k===5?.6:.25;ctx.lineWidth=k===5?2:1;ctx.stroke()}
+  ctx.lineWidth=1;ctx.globalAlpha=.25;for(let i=0;i<6;i++){const[x,y]=pt(i,R);ctx.beginPath();ctx.moveTo(CX,CY);ctx.lineTo(x,y);ctx.stroke()}
+  poly(S.stats.map((s,i)=>pt(i,R*s.v/10)));ctx.globalAlpha=.35;ctx.fillStyle=c.fg;ctx.fill();ctx.globalAlpha=1;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.stroke();
+  S.stats.forEach((s,i)=>{const[x,y]=pt(i,R*s.v/10);ctx.beginPath();ctx.arc(x,y,3.5,0,Math.PI*2);ctx.fill()});
+  ctx.textBaseline='middle';
+  S.stats.forEach((s,i)=>{const p=labelPos(i);ctx.textAlign=p.a==='middle'?'center':p.a==='start'?'left':'right';
+    ctx.font=`700 15px ${font}`;ctx.fillText(s.l||'',p.x,p.y);ctx.globalAlpha=.75;ctx.font=`12px ${font}`;ctx.fillText(String(s.v),p.x,p.y+17);ctx.globalAlpha=1});
+  ctx.restore();
+  const url=cv.toDataURL('image/png');
+  try{const a=document.createElement('a');a.href=url;a.download=(S.name||'limbus_stat')+'.png';document.body.appendChild(a);a.click();a.remove()}catch(e){}
+  $('pimg').src=url;$('preview').style.display='flex';
+}
+$('save').onclick=exportCard;
+$('preview').onclick=()=>$('preview').style.display='none';
+$('reset').onclick=()=>{S=DEF();$('name').value='';$('quote').value='';sSel.value='';fillIds();showImg();renderColors();renderStats();apply();fitAll();save()};
+
+sSel.value=S.sinner;fillIds();iSel.value=S.identity;showImg();
+renderColors();renderStats();apply();setTimeout(fitAll,0);
+</script>
+</body>
+</html>
