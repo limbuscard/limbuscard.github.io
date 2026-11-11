@@ -24,10 +24,12 @@
   .colors{display:flex;flex-wrap:wrap;gap:8px}
   .sw{width:34px;height:34px;border-radius:50%;border:2px solid #ccc;cursor:pointer}
   .sw.on{outline:3px solid #333;outline-offset:2px}
-  .row{display:grid;grid-template-columns:1fr 1.4fr 60px;gap:8px;align-items:center;margin-bottom:10px}
+  .row{display:grid;grid-template-columns:1fr 1.2fr 92px;gap:8px;align-items:center;margin-bottom:10px}
   .row input[type=text]{padding:7px 8px;border:1px solid #ccc;border-radius:8px;font-size:14px;width:100%}
   .row input[type=range]{width:100%}
   .val{display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:15px}
+  .val input{width:42px;text-align:center;font-weight:700;font-size:15px;border:1px solid #ccc;border-radius:6px;padding:4px 0;-moz-appearance:textfield}
+  .val input::-webkit-inner-spin-button,.val input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
   .val button{border:none;background:#eee;border-radius:6px;width:22px;height:26px;font-size:15px;padding:0}
   .btns{display:flex;gap:8px;margin-top:6px}
   .btns button{flex:1;padding:11px;border:none;border-radius:8px;background:#333;color:#fff;font-size:15px}
@@ -128,10 +130,11 @@ function renderStats(){
   const box=$('stats');box.innerHTML='';
   S.stats.forEach(s=>{
     const r=document.createElement('div');r.className='row';
-    r.innerHTML=`<input type="text" maxlength="10"><input type="range" min="0" max="10" step="0.5"><div class="val"><button>-</button><span></span><button>+</button></div>`;
-    const [t,rg]=r.querySelectorAll('input'),[m,p]=r.querySelectorAll('button'),sp=r.querySelector('span');
-    t.value=s.l;rg.value=s.v;sp.textContent=s.v;
-    const set=v=>{v=Math.max(0,Math.min(10,Math.round(v*2)/2));s.v=v;rg.value=v;sp.textContent=v;draw();save()};
+    r.innerHTML=`<input type="text" maxlength="10"><input type="range" min="0" max="10" step="0.5"><div class="val"><button>-</button><input type="number" inputmode="decimal" min="0" max="10" step="0.5"><button>+</button></div>`;
+    const [t,rg,num]=r.querySelectorAll('input'),[m,p]=r.querySelectorAll('button');
+    t.value=s.l;rg.value=s.v;num.value=s.v;
+    const set=v=>{v=+v;if(isNaN(v))v=s.v;v=Math.max(0,Math.min(10,Math.round(v*2)/2));s.v=v;rg.value=v;num.value=v;draw();save()};
+    num.onchange=()=>set(num.value);num.onkeydown=e=>{if(e.key==='Enter')num.blur()};
     t.oninput=()=>{s.l=t.value;draw();save()};rg.oninput=()=>set(+rg.value);
     m.onclick=()=>set(s.v-.5);p.onclick=()=>set(s.v+.5);box.appendChild(r)});
 }
