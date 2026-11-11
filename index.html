@@ -82,10 +82,10 @@ const COLORS=[
   {bg:'#43a047',fg:'#fff'},{bg:'#1e88e5',fg:'#fff'},{bg:'#283593',fg:'#fff'},
   {bg:'#8e24aa',fg:'#fff'},{bg:'#ffffff',fg:'#222'},{bg:'#111111',fg:'#fff'}];
 const DEF=()=>({name:'',quote:'',color:8,sinner:'',identity:'',autoName:true,stats:[
-  {l:'힘',v:5},{l:'민첩',v:5},{l:'지능',v:5},{l:'체력',v:5},{l:'매력',v:5},{l:'행운',v:5}]});
+  {l:'딜 지분',v:5},{l:'생존력',v:5},{l:'유틸',v:5},{l:'단독 성능',v:5},{l:'거던 적합도',v:5},{l:'조작 편의성',v:5}]});
 let S;
-try{S=Object.assign(DEF(),JSON.parse(localStorage.getItem('limbus_stat'))||{})}catch(e){S=DEF()}
-const save=()=>{try{localStorage.setItem('limbus_stat',JSON.stringify(S))}catch(e){}};
+try{S=Object.assign(DEF(),JSON.parse(localStorage.getItem('limbus_stat2'))||{})}catch(e){S=DEF()}
+const save=()=>{try{localStorage.setItem('limbus_stat2',JSON.stringify(S))}catch(e){}};
 const $=id=>document.getElementById(id);
 
 function fit(t){t.style.height='auto';t.style.height=t.scrollHeight+'px'}
@@ -128,7 +128,7 @@ function renderStats(){
   const box=$('stats');box.innerHTML='';
   S.stats.forEach(s=>{
     const r=document.createElement('div');r.className='row';
-    r.innerHTML=`<input type="text" maxlength="8"><input type="range" min="0" max="10" step="0.5"><div class="val"><button>-</button><span></span><button>+</button></div>`;
+    r.innerHTML=`<input type="text" maxlength="10"><input type="range" min="0" max="10" step="0.5"><div class="val"><button>-</button><span></span><button>+</button></div>`;
     const [t,rg]=r.querySelectorAll('input'),[m,p]=r.querySelectorAll('button'),sp=r.querySelector('span');
     t.value=s.l;rg.value=s.v;sp.textContent=s.v;
     const set=v=>{v=Math.max(0,Math.min(10,Math.round(v*2)/2));s.v=v;rg.value=v;sp.textContent=v;draw();save()};
