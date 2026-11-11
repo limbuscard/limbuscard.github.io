@@ -71,7 +71,15 @@
   </div>
 
   <div class="panel">
-    <h3>스탯 (0~10, 0.5 단위)</h3>
+    <h3 style="display:flex;justify-content:space-between;align-items:center">스탯 (0~10, 0.5 단위)<button id="helpbtn" style="border:none;background:#333;color:#fff;border-radius:50%;width:24px;height:24px;font-size:14px;font-weight:700">?</button></h3>
+    <div id="help" style="display:none;background:#f4f4f6;border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.6;margin-bottom:12px">
+      <b>딜 지분</b> 파티 대미지를 얼마나 책임지는지<br>
+      <b>생존력</b> 자기가 안 죽고 버티는 정도 (방어 스킬, 체력, 흐트러짐 저항)<br>
+      <b>유틸</b> 자기 딜 외에 팀에 주는 기여 (아군 버프, 적 디버프, 키워드 지원, 도발·회복·보호)<br>
+      <b>단독 성능</b> 같은 키워드 파츠 없이도 혼자 제 몫을 하는지<br>
+      <b>거던 적합도</b> 거울던전에서 얼마나 쓸 만한지<br>
+      <b>조작 편의성</b> 굴리기 쉬운 정도 (높을수록 쉬움)
+    </div>
     <div id="stats"></div>
     <div class="btns">
       <button class="sub" id="reset">초기화</button>
@@ -208,6 +216,7 @@ async function exportCard(){
   $('pimg').src=url;$('preview').style.display='flex';
 }
 $('save').onclick=exportCard;
+$('helpbtn').onclick=()=>{const h=$('help');h.style.display=h.style.display==='none'?'block':'none'};
 $('preview').onclick=()=>$('preview').style.display='none';
 $('reset').onclick=()=>{S=DEF();$('name').value='';$('quote').value='';sSel.value='';fillIds();showImg();setName();renderColors();renderStats();apply();fitAll();save()};
 
