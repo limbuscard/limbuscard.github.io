@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://limbuscard.github.io/sitemap.xml

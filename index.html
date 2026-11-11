@@ -3,7 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>림버스 스탯 카드</title>
+<title>인격 감정서 · 림버스 컴퍼니 인격 스탯 카드</title>
+<meta name="description" content="림버스 컴퍼니 수감자·인격을 골라 딜 지분, 생존력, 유틸 등 6가지 스탯을 육각형 그래프 카드로 만들고 이미지로 저장하는 팬 사이트.">
+<meta property="og:title" content="인격 감정서">
+<meta property="og:description" content="림버스 컴퍼니 인격 육각형 스탯 카드 만들기">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://limbuscard.github.io/">
 <style>
   @font-face{font-family:'NSerif';src:url(fonts/NotoSerifKR-Bold.woff2) format('woff2');font-weight:700;font-display:swap}
   *{box-sizing:border-box}
@@ -47,6 +52,7 @@
 </head>
 <body>
 <div class="wrap">
+  <h1 style="font-family:'NSerif',serif;font-size:24px;text-align:center;margin:4px 0 14px;letter-spacing:1px">인격 감정서</h1>
   <div class="card" id="card">
     <div class="top">
       <div class="info">
@@ -56,7 +62,7 @@
       <div class="img" id="imgbox">인격<br>선택</div>
     </div>
     <svg id="radar" viewBox="-36 0 432 330"></svg>
-    <div class="wm">limbuscard.github.io</div>
+    <div class="wm">인격 감정서 · limbuscard.github.io</div>
   </div>
 
   <div class="panel">
@@ -210,7 +216,7 @@ async function exportCard(){
   S.stats.forEach((s,i)=>{const p=labelPos(i);ctx.textAlign=p.a==='middle'?'center':p.a==='start'?'left':'right';
     ctx.font=`700 15px ${TF}`;ctx.fillText(s.l||'',p.x,p.y);ctx.globalAlpha=.75;ctx.font=`12px ${font}`;ctx.fillText(String(s.v),p.x,p.y+17);ctx.globalAlpha=1});
   ctx.restore();
-  ctx.textAlign='right';ctx.textBaseline='alphabetic';ctx.globalAlpha=.5;ctx.font=`10px ${font}`;ctx.fillStyle=c.fg;ctx.fillText('limbuscard.github.io',W-16,H-10);ctx.globalAlpha=1;
+  ctx.textAlign='right';ctx.textBaseline='alphabetic';ctx.globalAlpha=.5;ctx.font=`10px ${font}`;ctx.fillStyle=c.fg;ctx.fillText('인격 감정서 · limbuscard.github.io',W-16,H-10);ctx.globalAlpha=1;
   const url=cv.toDataURL('image/png');
   try{const a=document.createElement('a');a.href=url;a.download=(S.name||'limbus_stat')+'.png';document.body.appendChild(a);a.click();a.remove()}catch(e){}
   $('pimg').src=url;$('preview').style.display='flex';
