@@ -55,7 +55,7 @@
       </div>
       <div class="img" id="imgbox">인격<br>선택</div>
     </div>
-    <svg id="radar" viewBox="0 0 360 330"></svg>
+    <svg id="radar" viewBox="-36 0 432 330"></svg>
     <div class="wm">limbuscard.github.io</div>
   </div>
 
@@ -185,7 +185,7 @@ async function exportCard(){
   await document.fonts.ready;ctx.font=`700 22px ${TF}`;const nl=wrap(ctx,S.name||'',textW);
   ctx.font=`italic 14px ${font}`;const ql=wrap(ctx,S.quote||'',textW);
   const textH=nl.length*30+(ql.length?10+ql.length*19:0);
-  const topH=Math.max(100,textH),chartW=W-P*2,chartH=chartW*330/360,H=P+topH+8+chartH+P+8;
+  const topH=Math.max(100,textH),chartW=W-P*2,chartH=chartW*330/432,H=P+topH+8+chartH+P+8;
   cv.width=W*sc;cv.height=H*sc;ctx.scale(sc,sc);
   const[g1,g2]=grad(c),lg=ctx.createLinearGradient(0,0,W,H);lg.addColorStop(0,g1);lg.addColorStop(1,g2);
   ctx.save();ctx.beginPath();ctx.roundRect(0,0,W,H,18);ctx.clip();ctx.fillStyle=lg;ctx.fillRect(0,0,W,H);
@@ -200,7 +200,7 @@ async function exportCard(){
   ctx.save();ctx.beginPath();ctx.roundRect(ix,iy,100,100,12);ctx.clip();
   const pic=$('pic');if(pic&&pic.complete&&pic.naturalWidth)ctx.drawImage(pic,ix,iy,100,100);ctx.restore();
   ctx.strokeStyle=c.fg;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(ix,iy,100,100,12);ctx.stroke();
-  ctx.save();ctx.translate(P,P+topH+8);ctx.scale(chartW/360,chartW/360);
+  ctx.save();ctx.translate(P,P+topH+8);ctx.scale(chartW/432,chartW/432);ctx.translate(36,0);
   const poly=(pts)=>{ctx.beginPath();pts.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath()};
   for(let k=1;k<=5;k++){poly([0,1,2,3,4,5].map(i=>pt(i,R*k/5)));ctx.globalAlpha=k===5?.6:.25;ctx.lineWidth=k===5?2:1;ctx.stroke()}
   ctx.lineWidth=1;ctx.globalAlpha=.25;for(let i=0;i<6;i++){const[x,y]=pt(i,R);ctx.beginPath();ctx.moveTo(CX,CY);ctx.lineTo(x,y);ctx.stroke()}
