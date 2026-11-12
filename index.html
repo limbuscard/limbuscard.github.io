@@ -75,7 +75,7 @@
   </div>
 
   <div class="panel">
-    <h3>바탕색</h3>
+    <h3>바탕</h3>
     <div class="colors" id="colors"></div>
   </div>
 
@@ -104,15 +104,18 @@
 <script>
 const TF="'NSerif',serif";
 document.documentElement.style.setProperty('--tf',TF);
-const GOLD=c=>c.fg==='#222'?'#7a5a1e':'#c9a45c';
-const COLORS=[
-  {bg:'#b4252b',fg:'#fff'},{bg:'#e08a40',fg:'#222'},{bg:'#d3ac2c',fg:'#222'},
-  {bg:'#8fb545',fg:'#222'},{bg:'#4fb0c2',fg:'#222'},{bg:'#28439a',fg:'#fff'},
-  {bg:'#73318e',fg:'#fff'},{bg:'#ffffff',fg:'#222'},{bg:'#111111',fg:'#fff'}];
-const DEF=()=>({name:'',quote:'',color:8,sinner:'',identity:'',autoName:true,stats:[
+const COLORS=[{bg:'#111111',fg:'#fff'},{bg:'#ffffff',fg:'#222'}];
+const GOLD=c=>c.fg==='#222'?'#ad8a2c':'#c9a45c';
+const SCOL={'yi-sang':'#d3e1e7','faust':'#ffb1b5','don-quixote':'#ffef23','ryoshu':'#ce0000','meursault':'#293b94','hong-lu':'#5affde','heathcliff':'#4f3076','ishmael':'#ff9600','rodion':'#810000','sinclair':'#8b9c15','outis':'#315339','gregor':'#68350b'};
+function hsl(hex){const n=parseInt(hex.slice(1),16);let r=(n>>16)/255,g=(n>>8&255)/255,b=(n&255)/255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b);let h=0,s=0,l=(mx+mn)/2;if(mx!==mn){const d=mx-mn;s=l>.5?d/(2-mx-mn):d/(mx+mn);h=mx===r?(g-b)/d+(g<b?6:0):mx===g?(b-r)/d+2:(r-g)/d+4;h*=60}return[h,s*100,l*100]}
+// 바탕에 맞춰 수감자 색 밝기 보정
+function accent(){const c=COLORS[S.color],hex=SCOL[S.sinner];if(!hex)return c.bg==='#ffffff'?'#7a5a1e':'#c9a45c';let[h,s,l]=hsl(hex);
+  if(c.bg==='#ffffff'){l=Math.min(l,42);if(s<25)l=Math.min(l,35)}else{l=Math.max(l,58)}return`hsl(${h.toFixed(0)},${s.toFixed(0)}%,${l.toFixed(0)}%)`}
+const DEF=()=>({name:'',quote:'',color:0,sinner:'',identity:'',autoName:true,stats:[
   {l:'화력',v:5},{l:'생존력',v:5},{l:'유틸',v:5},{l:'굿스터프',v:5},{l:'덱 기여도',v:5},{l:'조작 편의성',v:5}]});
 let S;
 try{S=Object.assign(DEF(),JSON.parse(localStorage.getItem('limbus_stat4'))||{})}catch(e){S=DEF()}
+if(!COLORS[S.color])S.color=S.color===7?1:0;
 const save=()=>{try{localStorage.setItem('limbus_stat4',JSON.stringify(S))}catch(e){}};
 const $=id=>document.getElementById(id);
 
@@ -178,8 +181,8 @@ function draw(){
   if(S.sinner)h+=`<image href="${logoSrc()}" x="${CX-LS/2}" y="${CY-LS/2}" width="${LS}" height="${LS}" opacity="${LA}" preserveAspectRatio="xMidYMid meet"/>`;
   for(let k=1;k<=5;k++)h+=`<polygon points="${[0,1,2,3,4,5].map(i=>pt(i,R*k/5).join(',')).join(' ')}" fill="none" stroke="${fg}" stroke-opacity="${k===5?.6:.25}" stroke-width="${k===5?2:1}"/>`;
   for(let i=0;i<6;i++){const[x,y]=pt(i,R);h+=`<line x1="${CX}" y1="${CY}" x2="${x}" y2="${y}" stroke="${fg}" stroke-opacity=".25"/>`}
-  h+=`<polygon points="${S.stats.map((s,i)=>pt(i,R*s.v/10).join(',')).join(' ')}" fill="${fg}" fill-opacity=".18" stroke="${fg}" stroke-width="2.5" stroke-linejoin="round"/>`;
-  S.stats.forEach((s,i)=>{const[x,y]=pt(i,R*s.v/10);h+=`<circle cx="${x}" cy="${y}" r="3.5" fill="${fg}"/>`});
+  const ac=accent();h+=`<polygon points="${S.stats.map((s,i)=>pt(i,R*s.v/10).join(',')).join(' ')}" fill="${ac}" fill-opacity=".18" stroke="${ac}" stroke-width="2.5" stroke-linejoin="round"/>`;
+  S.stats.forEach((s,i)=>{const[x,y]=pt(i,R*s.v/10);h+=`<circle cx="${x}" cy="${y}" r="3.5" fill="${ac}"/>`});
   S.stats.forEach((s,i)=>{const p=labelPos(i);
     h+=`<text x="${p.x}" y="${p.y}" fill="${fg}" font-family="${TF.replace(/"/g,'')}" font-size="15" font-weight="700" text-anchor="${p.a}" dominant-baseline="middle">${esc(s.l||'')}</text>`;
     h+=`<text x="${p.x}" y="${p.y+17}" fill="${fg}" font-size="12" opacity=".75" text-anchor="${p.a}" dominant-baseline="middle">${s.v}</text>`});
@@ -218,9 +221,9 @@ async function exportCard(){
   const poly=(pts)=>{ctx.beginPath();pts.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath()};
   for(let k=1;k<=5;k++){poly([0,1,2,3,4,5].map(i=>pt(i,R*k/5)));ctx.globalAlpha=k===5?.6:.25;ctx.lineWidth=k===5?2:1;ctx.stroke()}
   ctx.lineWidth=1;ctx.globalAlpha=.25;for(let i=0;i<6;i++){const[x,y]=pt(i,R);ctx.beginPath();ctx.moveTo(CX,CY);ctx.lineTo(x,y);ctx.stroke()}
-  poly(S.stats.map((s,i)=>pt(i,R*s.v/10)));ctx.globalAlpha=.18;ctx.fillStyle=c.fg;ctx.fill();ctx.globalAlpha=1;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.stroke();
+  poly(S.stats.map((s,i)=>pt(i,R*s.v/10)));const ac=accent();ctx.globalAlpha=.18;ctx.fillStyle=ac;ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle=ac;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.stroke();
   S.stats.forEach((s,i)=>{const[x,y]=pt(i,R*s.v/10);ctx.beginPath();ctx.arc(x,y,3.5,0,Math.PI*2);ctx.fill()});
-  ctx.textBaseline='middle';
+  ctx.fillStyle=c.fg;ctx.textBaseline='middle';
   S.stats.forEach((s,i)=>{const p=labelPos(i);ctx.textAlign=p.a==='middle'?'center':p.a==='start'?'left':'right';
     ctx.font=`700 15px ${TF}`;ctx.fillText(s.l||'',p.x,p.y);ctx.globalAlpha=.75;ctx.font=`12px ${font}`;ctx.fillText(String(s.v),p.x,p.y+17);ctx.globalAlpha=1});
   ctx.restore();
