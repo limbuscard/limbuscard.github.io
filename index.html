@@ -86,7 +86,7 @@
       <b>생존력</b> 자기가 안 죽고 버티는 정도 (방어 스킬, 체력, 흐트러짐 저항)<br>
       <b>유틸</b> 자기 딜 외에 팀에 주는 기여 (아군 버프, 적 디버프, 키워드 지원, 도발·회복·보호)<br>
       <b>굿스터프</b> 맞는 덱이 없어도 제 몫을 하는지<br>
-      <b>덱 핵심도</b> 그 키워드 덱에서 빠지면 안 되는 정도<br>
+      <b>덱 기여도</b> 그 키워드 덱에 얼마나 보탬이 되는지 (빠지면 아쉬운 정도)<br>
       <b>조작 편의성</b> 굴리기 쉬운 정도 (높을수록 쉬움)
     </div>
     <div id="stats"></div>
@@ -110,10 +110,10 @@ const COLORS=[
   {bg:'#8fb545',fg:'#222'},{bg:'#4fb0c2',fg:'#222'},{bg:'#28439a',fg:'#fff'},
   {bg:'#73318e',fg:'#fff'},{bg:'#ffffff',fg:'#222'},{bg:'#111111',fg:'#fff'}];
 const DEF=()=>({name:'',quote:'',color:8,sinner:'',identity:'',autoName:true,stats:[
-  {l:'화력',v:5},{l:'생존력',v:5},{l:'유틸',v:5},{l:'굿스터프',v:5},{l:'덱 핵심도',v:5},{l:'조작 편의성',v:5}]});
+  {l:'화력',v:5},{l:'생존력',v:5},{l:'유틸',v:5},{l:'굿스터프',v:5},{l:'덱 기여도',v:5},{l:'조작 편의성',v:5}]});
 let S;
-try{S=Object.assign(DEF(),JSON.parse(localStorage.getItem('limbus_stat3'))||{})}catch(e){S=DEF()}
-const save=()=>{try{localStorage.setItem('limbus_stat3',JSON.stringify(S))}catch(e){}};
+try{S=Object.assign(DEF(),JSON.parse(localStorage.getItem('limbus_stat4'))||{})}catch(e){S=DEF()}
+const save=()=>{try{localStorage.setItem('limbus_stat4',JSON.stringify(S))}catch(e){}};
 const $=id=>document.getElementById(id);
 
 function fit(t){t.style.height='auto';t.style.height=t.scrollHeight+'px'}
